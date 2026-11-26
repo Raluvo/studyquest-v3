@@ -1,0 +1,1391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StudyQuest Habit Tracker</title>
+<meta name="description" content="StudyQuest — a gamified study habit tracker. Prototype by IED Group 10, Universitas Indonesia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f4ee; --surface:#ffffff; --surface-2:#f1eee5; --border:#e4dfd2;
+  --text:#1d2433; --muted:#6b7080;
+  --accent:#f2b705; --accent-strong:#b98300; --accent-soft:#fff4cc; --on-accent:#1d2433;
+  --green:#1f9d63; --green-soft:#dcf3e7; --blue:#2f6fde; --blue-soft:#e1ebfc;
+  --red:#d9503d; --red-soft:#fbe3df; --purple:#7b5cd6; --purple-soft:#ece6fb;
+  --heat0:#ebe7dc; --heat1:#fde9a8; --heat2:#f8d25c; --heat3:#f2b705; --heat4:#c98d00;
+  --shadow:0 1px 2px rgba(29,36,51,.05),0 6px 20px rgba(29,36,51,.06);
+  --radius:18px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12151c; --surface:#1b1f29; --surface-2:#232835; --border:#2e3443;
+    --text:#eef0f5; --muted:#9aa1b2;
+    --accent:#f5c02e; --accent-strong:#ffd35a; --accent-soft:#3a3218; --on-accent:#1b1f29;
+    --green:#3cc486; --green-soft:#17352a; --blue:#6c9cf2; --blue-soft:#1d2a45;
+    --red:#f07d6c; --red-soft:#3d221f; --purple:#a88cf5; --purple-soft:#2b2445;
+    --heat0:#262b38; --heat1:#4a3f17; --heat2:#7a6216; --heat3:#c69a12; --heat4:#f5c02e;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12151c; --surface:#1b1f29; --surface-2:#232835; --border:#2e3443;
+  --text:#eef0f5; --muted:#9aa1b2;
+  --accent:#f5c02e; --accent-strong:#ffd35a; --accent-soft:#3a3218; --on-accent:#1b1f29;
+  --green:#3cc486; --green-soft:#17352a; --blue:#6c9cf2; --blue-soft:#1d2a45;
+  --red:#f07d6c; --red-soft:#3d221f; --purple:#a88cf5; --purple-soft:#2b2445;
+  --heat0:#262b38; --heat1:#4a3f17; --heat2:#7a6216; --heat3:#c69a12; --heat4:#f5c02e;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3,h4{margin:0;line-height:1.25}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* ---------- Layout ---------- */
+.app{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
+.sidebar{
+  position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px;
+  padding:24px 16px;border-right:1px solid var(--border);background:var(--surface);
+}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 18px}
+.brand-mark{
+  width:38px;height:38px;border-radius:12px;background:var(--accent);color:var(--on-accent);
+  display:grid;place-items:center;font-weight:800;font-size:18px;
+}
+.brand b{display:block;font-size:17px;letter-spacing:-.01em}
+.brand span{font-size:12px;color:var(--muted)}
+.nav-btn{
+  display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:0;border-radius:12px;
+  background:transparent;font-weight:600;color:var(--muted);text-align:left;
+}
+.nav-btn svg{width:20px;height:20px;flex:none}
+.nav-btn:hover{background:var(--surface-2);color:var(--text)}
+.nav-btn.active{background:var(--accent-soft);color:var(--text)}
+.nav-btn.active svg{color:var(--accent-strong)}
+.sidebar-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+.mini-level{padding:14px;border-radius:14px;background:var(--surface-2)}
+.mini-level .row{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:8px}
+
+main{padding:28px 36px 56px;width:100%;max-width:1200px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
+.topbar h1{font-size:24px;letter-spacing:-.02em}
+.topbar .sub{font-size:13px;color:var(--muted)}
+.pills{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--border);font-weight:700;font-size:13px;white-space:nowrap;
+}
+.icon-btn{
+  width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);
+  display:grid;place-items:center;
+}
+.icon-btn svg{width:18px;height:18px}
+.mobile-brand{display:none}
+
+.bottomnav{
+  display:none;position:fixed;left:0;right:0;bottom:0;z-index:20;
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));justify-content:space-around;
+}
+.bottomnav .nav-btn{flex-direction:column;gap:2px;font-size:10px;padding:6px 2px;align-items:center;text-align:center;width:auto;flex:1}
+
+/* ---------- Building blocks ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.card-head h2{font-size:17px;letter-spacing:-.01em}
+.stack{display:flex;flex-direction:column;gap:18px}
+.grid-2{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px}
+.grid-even{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px 14px;border-radius:12px;border:1px solid var(--border);background:var(--surface);
+  font-weight:700;font-size:14px;white-space:nowrap;
+}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{filter:brightness(1.05)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.danger{color:var(--red)}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.link{border:0;background:none;padding:0;font-weight:700;color:var(--accent-strong)}
+
+.chip{
+  display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;
+  background:var(--surface-2);font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;
+}
+.xp-chip{
+  display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:800;
+  background:var(--accent-soft);color:var(--accent-strong);white-space:nowrap;
+}
+.bar{height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.bar > i{display:block;height:100%;border-radius:inherit;background:var(--accent);transition:width .5s ease}
+.bar.green > i{background:var(--green)}
+.empty{padding:22px;text-align:center;color:var(--muted);border:1.5px dashed var(--border);border-radius:14px}
+
+/* ---------- Dashboard ---------- */
+.hero{
+  display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:center;
+  background:linear-gradient(135deg,var(--accent-soft),var(--surface) 70%);
+}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.hero h1{font-size:28px;letter-spacing:-.02em;margin-bottom:6px}
+.name-btn{border:0;background:none;padding:0;font-weight:800;color:inherit;border-bottom:2px dashed var(--accent)}
+.level-card{display:flex;gap:14px;align-items:center;padding:16px;border-radius:16px;background:var(--surface);border:1px solid var(--border)}
+.level-badge{
+  width:62px;height:62px;flex:none;border-radius:18px;background:var(--accent);color:var(--on-accent);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;
+}
+.level-badge small{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.level-badge b{font-size:26px;font-weight:800}
+.level-card .info{flex:1;min-width:0}
+.level-card .title{font-weight:800}
+.level-card .xp-line{font-size:12px;color:var(--muted);margin-top:6px}
+
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.stat{display:flex;align-items:center;gap:14px;padding:16px}
+.stat .ico{width:44px;height:44px;flex:none;border-radius:14px;display:grid;place-items:center;font-size:22px}
+.stat .val{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.stat .lbl{font-size:12px;color:var(--muted);font-weight:600}
+
+.habit-list{display:flex;flex-direction:column;gap:8px}
+.habit-row{
+  display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:14px;
+  border:1px solid var(--border);background:var(--surface);text-align:left;transition:background .15s,border-color .15s;
+}
+.habit-row:hover{border-color:var(--accent)}
+.check{
+  width:26px;height:26px;flex:none;border-radius:9px;border:2px solid var(--border);display:grid;place-items:center;
+  color:transparent;transition:all .15s;
+}
+.check svg{width:16px;height:16px}
+.habit-row.done{background:var(--green-soft);border-color:transparent}
+.habit-row.done .check{background:var(--green);border-color:var(--green);color:#fff}
+.habit-row.done .h-name{text-decoration:line-through;text-decoration-color:var(--muted)}
+.h-icon{font-size:22px;width:28px;text-align:center;flex:none}
+.h-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.h-name{font-weight:700}
+.h-meta{font-size:12px;color:var(--muted)}
+
+.timer-digits{font-size:46px;font-weight:800;letter-spacing:-.03em;text-align:center;font-variant-numeric:tabular-nums;line-height:1.1;margin:4px 0 10px}
+.timer-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+
+.task-mini{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.task-mini:last-child{border-bottom:0}
+.task-mini .t{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.due{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
+.due.soon{color:var(--accent-strong)}
+.due.over{color:var(--red)}
+
+.heat-wrap{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.heat-days{display:grid;grid-template-rows:repeat(7,16px);gap:4px;font-size:10px;color:var(--muted);padding-top:20px}
+.heat-grid{display:flex;gap:4px}
+.hcol{display:grid;grid-template-rows:16px repeat(7,16px);gap:4px}
+.hcol .mlabel{font-size:10px;color:var(--muted);white-space:nowrap;height:14px}
+.hc{width:16px;height:16px;border-radius:4px;background:var(--heat0)}
+.hc.l1{background:var(--heat1)} .hc.l2{background:var(--heat2)} .hc.l3{background:var(--heat3)} .hc.l4{background:var(--heat4)}
+.hc.lf{background:transparent;border:1px dashed var(--border)}
+.hc.today{outline:2px solid var(--text);outline-offset:1px}
+.legend{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+.legend .hc{width:12px;height:12px}
+
+.next-badge{display:flex;align-items:center;gap:16px}
+.badge-ico{width:56px;height:56px;flex:none;border-radius:16px;display:grid;place-items:center;font-size:28px;background:var(--purple-soft)}
+
+/* ---------- Habits ---------- */
+.habit-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.habit-card{display:flex;flex-direction:column;gap:14px}
+.habit-card .top{display:flex;gap:12px;align-items:flex-start}
+.habit-card .big-ico{width:48px;height:48px;flex:none;border-radius:14px;background:var(--accent-soft);display:grid;place-items:center;font-size:24px}
+.habit-card h3{font-size:16px}
+.week-dots{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dot-btn{
+  display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;padding:0;
+  font-size:11px;color:var(--muted);font-weight:600;
+}
+.dot-btn span{
+  width:100%;aspect-ratio:1;max-width:34px;border-radius:10px;background:var(--surface-2);border:1.5px solid var(--border);
+  display:grid;place-items:center;color:transparent;
+}
+.dot-btn span svg{width:14px;height:14px}
+.dot-btn.on span{background:var(--green);border-color:var(--green);color:#fff}
+.dot-btn.is-today{color:var(--text)}
+.dot-btn.is-today span{border-color:var(--text)}
+.habit-card .foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+
+/* ---------- Tasks & goals ---------- */
+.seg{display:inline-flex;background:var(--surface-2);border-radius:12px;padding:3px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:9px;font-weight:700;font-size:13px;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.task-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.task-row:last-child{border-bottom:0}
+.task-row .check{border-radius:50%;background:none}
+.task-row.done .check{background:var(--green);border-color:var(--green);color:#fff}
+.task-row.done .t-title{text-decoration:line-through;color:var(--muted)}
+.task-row .t-main{flex:1;min-width:0}
+.t-title{font-weight:700}
+.t-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:3px}
+.del{border:0;background:none;color:var(--muted);padding:6px;border-radius:8px;display:grid;place-items:center}
+.del:hover{color:var(--red);background:var(--red-soft)}
+.del svg{width:16px;height:16px}
+.goal{padding:14px 0;border-bottom:1px solid var(--border)}
+.goal:last-child{border-bottom:0}
+.goal .g-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.goal .g-title{flex:1;font-weight:700;min-width:0}
+.goal .g-ctrl{display:flex;align-items:center;gap:10px}
+.goal .g-ctrl .bar{flex:1}
+.step-btn{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:var(--surface);font-weight:800;display:grid;place-items:center}
+.goal.complete .g-title::after{content:" ✓";color:var(--green)}
+
+/* ---------- Topics ---------- */
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filter{border:1px solid var(--border);background:var(--surface);padding:6px 12px;border-radius:999px;font-weight:700;font-size:13px;color:var(--muted)}
+.filter.on{background:var(--text);border-color:var(--text);color:var(--bg)}
+.mastery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.mastery .m-row{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
+.col{background:var(--surface-2);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px;min-height:120px}
+.col-head{display:flex;align-items:center;gap:8px;font-weight:800;padding:2px 4px 4px}
+.col-head .count{margin-left:auto;font-size:12px;color:var(--muted)}
+.col-dot{width:10px;height:10px;border-radius:50%}
+.topic{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;border-left:4px solid var(--border)}
+.topic.s0{border-left-color:var(--red)} .topic.s1{border-left-color:var(--blue)} .topic.s2{border-left-color:var(--green)}
+.topic .tp-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.topic h4{font-size:15px}
+.topic details{font-size:13px;background:var(--surface-2);border-radius:10px;padding:8px 10px}
+.topic summary{cursor:pointer;font-weight:700;color:var(--muted)}
+.topic details p{margin-top:6px}
+.topic .tp-actions{display:flex;gap:6px;justify-content:space-between}
+
+/* ---------- Rewards ---------- */
+.balance{display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,var(--accent-soft),var(--surface) 75%)}
+.balance .coin{font-size:40px}
+.balance .val{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.reward{display:flex;flex-direction:column;gap:10px;align-items:flex-start;position:relative}
+.reward .r-ico{font-size:30px}
+.reward .r-name{font-weight:800}
+.reward .del{position:absolute;top:10px;right:10px}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.badge{padding:14px;border-radius:16px;border:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.badge .b-ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:24px;background:var(--purple-soft)}
+.badge.locked .b-ico{filter:grayscale(1);opacity:.45;background:var(--surface-2)}
+.badge .b-name{font-weight:800;font-size:14px}
+.badge .b-desc{font-size:12px;color:var(--muted)}
+.badge .bar{width:100%;height:6px;margin-top:4px}
+.badge.unlocked{border-color:var(--purple)}
+.ledger-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}
+.ledger-row:last-child{border-bottom:0}
+.ledger-row .l-ico{font-size:18px;width:24px;text-align:center}
+.ledger-row .l-main{flex:1;min-width:0}
+.ledger-row .amt{font-weight:800;white-space:nowrap}
+.amt.plus{color:var(--green)} .amt.minus{color:var(--red)}
+
+/* ---------- Character ---------- */
+.hero-me{display:flex;align-items:center;gap:18px}
+.avatar{width:96px;height:96px;flex:none;padding:0;border:0;border-radius:26px;overflow:hidden;background:none;box-shadow:var(--shadow)}
+.avatar svg,.skin-art svg,.char-big svg{display:block;width:100%;height:100%}
+.char-stage{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;align-items:center}
+.char-big{width:200px;height:200px;border-radius:28px;overflow:hidden;box-shadow:var(--shadow)}
+.char-stage h2{font-size:26px;letter-spacing:-.02em;margin-bottom:4px}
+.char-stage .label{font-size:13px;font-weight:700;margin:14px 0 6px}
+.swatches{display:flex;gap:8px}
+.swatch{width:30px;height:30px;border-radius:50%;border:2px solid var(--border)}
+.swatch.on{outline:2px solid var(--text);outline-offset:2px}
+.skins{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.skin{display:flex;flex-direction:column;gap:10px}
+.skin.equipped{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.skin-art{aspect-ratio:1;border-radius:14px;overflow:hidden}
+.skin.locked .skin-art svg{filter:grayscale(.85)}
+.skin .row{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.skin .s-name{font-weight:800}
+.rar{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px}
+.rar.common{background:var(--surface-2);color:var(--muted)}
+.rar.rare{background:var(--blue-soft);color:var(--blue)}
+.rar.epic{background:var(--purple-soft);color:var(--purple)}
+.rar.legendary{background:var(--accent-soft);color:var(--accent-strong)}
+@media (max-width:900px){.char-stage{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}.char-stage .swatches{justify-content:center}}
+@media (max-width:520px){.avatar{width:72px;height:72px;border-radius:20px}.hero-me{gap:12px}}
+
+/* ---------- About ---------- */
+.about h2{font-size:19px;margin-bottom:10px}
+.about p + p{margin-top:10px}
+.quote{border-left:4px solid var(--accent);padding:12px 16px;background:var(--accent-soft);border-radius:0 12px 12px 0;font-weight:600}
+.process{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.step{padding:14px;border-radius:14px;background:var(--surface-2)}
+.step .n{font-size:12px;font-weight:800;color:var(--accent-strong)}
+.step b{display:block;margin:2px 0 4px}
+.step p{font-size:13px;color:var(--muted)}
+.persona{padding:14px;border-radius:14px;border:1px solid var(--border)}
+.persona b{display:block}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.table-wrap{overflow-x:auto}
+ol.howto{margin:0;padding-left:20px}
+ol.howto li + li{margin-top:6px}
+
+/* ---------- Modal & toast ---------- */
+dialog{
+  border:0;border-radius:20px;padding:0;width:min(440px,calc(100vw - 32px));
+  background:var(--surface);color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+dialog::backdrop{background:rgba(15,18,25,.45);backdrop-filter:blur(2px)}
+.modal-form{padding:22px;display:flex;flex-direction:column;gap:14px}
+.modal-form h3{font-size:19px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:700}
+.field input,.field select,.field textarea{
+  width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--bg);
+}
+.field textarea{min-height:76px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+.field .hint{font-size:12px;color:var(--muted)}
+.emoji-row{display:flex;flex-wrap:wrap;gap:6px}
+.emoji-chip{width:38px;height:38px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);font-size:19px;display:grid;place-items:center}
+.emoji-chip.on{border-color:var(--accent);background:var(--accent-soft)}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+
+.toasts{position:fixed;right:20px;bottom:20px;z-index:60;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none}
+.toast{
+  background:var(--text);color:var(--bg);padding:11px 16px;border-radius:14px;font-weight:700;font-size:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.2);animation:toastIn .25s ease;max-width:340px;
+}
+.toast.out{opacity:0;transform:translateY(8px);transition:all .3s}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:70}
+
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1100px){
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .process{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:900px){
+  .grid-2,.grid-even{grid-template-columns:minmax(0,1fr)}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .board{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .sidebar{display:none}
+  .bottomnav{display:flex}
+  main{padding:16px 16px 100px}
+  .mobile-brand{display:flex}
+  .topbar .page-title{display:none}
+  .toasts{left:16px;right:16px;bottom:84px;align-items:stretch}
+  .toast{max-width:none}
+}
+@media (max-width:520px){
+  .stats{gap:10px}
+  .stat{padding:12px;gap:10px}
+  .stat .ico{width:38px;height:38px;font-size:19px}
+  .stat .val{font-size:19px}
+  .hero h1{font-size:23px}
+  .pills .pill.hide-sm{display:none}
+  .process{grid-template-columns:minmax(0,1fr)}
+  .card{padding:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" aria-label="Main navigation">
+    <div class="brand">
+      <div class="brand-mark">SQ</div>
+      <div><b>StudyQuest</b><span>Gamified habit tracker</span></div>
+    </div>
+    <nav id="sideNav"></nav>
+    <div class="sidebar-foot">
+      <div class="mini-level" id="miniLevel"></div>
+      <p class="small muted" style="padding:0 6px">IED Prototype · Group 10</p>
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div class="mobile-brand brand" style="padding:0"><div class="brand-mark">SQ</div><div><b>StudyQuest</b></div></div>
+      <div class="page-title"><h1 id="pageTitle">Dashboard</h1><div class="sub" id="pageSub"></div></div>
+      <div class="pills" id="pills"></div>
+    </header>
+    <div id="view" class="stack"></div>
+  </main>
+
+  <nav class="bottomnav" id="bottomNav" aria-label="Main navigation"></nav>
+</div>
+
+<dialog id="modal"></dialog>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<canvas id="confetti"></canvas>
+
+<script>
+/* =========================================================
+   StudyQuest — IED Group 10 prototype
+   All data is stored in the browser (localStorage).
+   ========================================================= */
+const STORE_KEY = 'studyquest-v1';
+const THEME_KEY = 'studyquest-theme';
+
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Math.random().toString(36).slice(2, 9);
+const pad = n => String(n).padStart(2, '0');
+const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const today = () => keyOf(new Date());
+const parseKey = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (k, n) => { const d = parseKey(k); d.setDate(d.getDate() + n); return keyOf(d); };
+const diffDays = (a, b) => Math.round((parseKey(a) - parseKey(b)) / 864e5);
+const fmtLong = k => parseKey(k).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+const fmtShort = k => parseKey(k).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+const fmtNum = n => n.toLocaleString('en-US');
+const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+const ICONS = {
+  dashboard: '<path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/>',
+  habits: '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+  tasks: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  topics: '<path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/><path d="M9 21h6"/>',
+  rewards: '<circle cx="12" cy="8" r="6"/><path d="M8.2 13.4L7 22l5-3 5 3-1.2-8.6"/>',
+  about: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  character: '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>',
+  check: '<path d="M20 6L9 17l-5-5"/>',
+  trash: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
+  moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+};
+const svg = (name, extra = '') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" ${extra}>${ICONS[name]}</svg>`;
+
+const VIEWS = [
+  { id: 'dashboard', label: 'Dashboard', sub: 'Your study progress at a glance' },
+  { id: 'habits', label: 'Habits', sub: 'Daily study habits that build your streak' },
+  { id: 'tasks', label: 'Tasks & Goals', sub: 'Assignments and learning goals' },
+  { id: 'topics', label: 'Topics', sub: 'Track which materials you understand' },
+  { id: 'rewards', label: 'Rewards', sub: 'Spend points, collect badges' },
+  { id: 'character', label: 'Character', sub: 'Dress up your study buddy' },
+  { id: 'about', label: 'About', sub: 'How this prototype came to be' },
+];
+
+const STATUS = [
+  { label: 'Struggling', color: 'var(--red)' },
+  { label: 'Learning', color: 'var(--blue)' },
+  { label: 'Mastered', color: 'var(--green)' },
+];
+const TOPIC_XP = 30;
+const EMOJIS = ['📐','📖','🌍','⏱️','🔥','🧮','✍️','💡','🧪','🏗️','📊','🎧','💪','🗂️','🧠','📝'];
+const REWARD_EMOJIS = ['🎮','🧋','🎬','😴','🍕','🛍️','🎵','☕','🏖️','🍦'];
+
+const LEVEL_TITLES = [[1,'Freshman'],[3,'Apprentice'],[5,'Scholar'],[8,'Expert'],[12,'Master'],[16,'Legend']];
+const levelTitle = L => LEVEL_TITLES.filter(([l]) => L >= l).pop()[1];
+
+/* ---------- character & skins ---------- */
+const SKINS = [
+  { id: 'rookie', name: 'Rookie', rar: 'common', cost: 0, lvl: 1, body: '#f7cf5a', outfit: '#5b8def', art: '', gear: '' },
+  { id: 'scholar', name: 'Grad Scholar', rar: 'common', cost: 120, lvl: 1, body: '#f3c9a5', outfit: '#1d2433',
+    art: '<path d="M52 84L60 96L68 84Z" fill="#fff"/>',
+    gear: '<path d="M30 38L60 24L90 38L60 52Z" fill="#1d2433"/><path d="M46 44v8q14 7 28 0v-8" fill="#2a3347"/><path d="M90 38v13" stroke="#f2b705" stroke-width="2.5"/><circle cx="90" cy="53" r="3" fill="#f2b705"/>' },
+  { id: 'labcoat', name: 'Lab Genius', rar: 'rare', cost: 220, lvl: 2, body: '#f3c9a5', outfit: '#ffffff',
+    art: '<path d="M52 84L60 100L68 84Z" fill="#2f6fde"/><path d="M60 100V120" stroke="#cfd6e6" stroke-width="2.5"/>',
+    gear: '<path d="M32 40Q60 30 88 40" stroke="#1d2433" stroke-width="4" fill="none"/><circle cx="50" cy="37" r="7" fill="#8fe3d6" stroke="#1d2433" stroke-width="2.5"/><circle cx="70" cy="37" r="7" fill="#8fe3d6" stroke="#1d2433" stroke-width="2.5"/>' },
+  { id: 'engineer', name: 'Site Engineer', rar: 'rare', cost: 300, lvl: 3, body: '#f3c9a5', outfit: '#f28c28',
+    art: '<path d="M45 88V120M75 88V120" stroke="#f7e27a" stroke-width="5"/>',
+    gear: '<path d="M31 46Q31 22 60 22Q89 22 89 46Z" fill="#f2b705"/><rect x="26" y="44" width="68" height="7" rx="3.5" fill="#d99a00"/><rect x="54" y="20" width="12" height="14" rx="3" fill="#d99a00"/>' },
+  { id: 'ninja', name: 'Focus Ninja', rar: 'epic', cost: 450, lvl: 4, body: '#f3c9a5', outfit: '#1d2433',
+    art: '<rect x="26" y="106" width="68" height="6" fill="#d9503d"/>',
+    gear: '<path d="M30 44Q60 36 90 44V52Q60 44 30 52Z" fill="#d9503d"/><path d="M90 46l14-5-3 10 10 3" stroke="#d9503d" stroke-width="4" fill="none" stroke-linejoin="round"/>' },
+  { id: 'wizard', name: 'Study Wizard', rar: 'epic', cost: 650, lvl: 5, body: '#f3c9a5', outfit: '#7b5cd6',
+    art: '<circle cx="46" cy="104" r="2.5" fill="#ffd35a"/><circle cx="72" cy="98" r="2" fill="#ffd35a"/><circle cx="64" cy="112" r="2.5" fill="#ffd35a"/>',
+    gear: '<path d="M34 46L60 4L86 46Z" fill="#7b5cd6"/><ellipse cx="60" cy="46" rx="35" ry="7" fill="#5f43b8"/><path d="M60 20l3 6 6.5 1-4.7 4.6 1.1 6.4-5.9-3.1-5.9 3.1 1.1-6.4-4.7-4.6 6.5-1z" fill="#ffd35a"/>' },
+  { id: 'astro', name: 'Astronaut', rar: 'epic', cost: 900, lvl: 7, body: '#f3c9a5', outfit: '#e8ecf5',
+    art: '<circle cx="74" cy="104" r="5" fill="#d9503d"/><rect x="42" y="100" width="14" height="7" rx="2" fill="#2f6fde"/>',
+    gear: '<circle cx="60" cy="56" r="37" fill="#9fd2ff" fill-opacity=".25" stroke="#e8ecf5" stroke-width="6"/><path d="M36 44Q41 34 52 31" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".85"/>' },
+  { id: 'gold', name: 'Golden Legend', rar: 'legendary', cost: 1600, lvl: 10, body: '#ffd75e', outfit: '#f2b705',
+    art: '<circle cx="60" cy="98" r="5.5" fill="#fff4cc" stroke="#b98300" stroke-width="2"/>',
+    gear: '<path d="M37 36L39 14L52 26L60 8L68 26L81 14L83 36Z" fill="#f2b705" stroke="#b98300" stroke-width="2.5" stroke-linejoin="round"/><circle cx="60" cy="28" r="3" fill="#d9503d"/><path d="M16 30l2 5 5 2-5 2-2 5-2-5-5-2 5-2zM100 70l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#fff"/>' },
+];
+const BACKDROPS = [{ id: 'sun', v: '--accent-soft' }, { id: 'sky', v: '--blue-soft' }, { id: 'mint', v: '--green-soft' }, { id: 'lav', v: '--purple-soft' }, { id: 'rose', v: '--red-soft' }];
+const MOOD_TEXT = { proud: 'All habits done today — feeling fantastic!', happy: 'Ready to study with you. Keep going!', sleepy: 'A little sleepy… check in a habit to wake me up.' };
+const skinOf = id => SKINS.find(k => k.id === id) || SKINS[0];
+const defaultCharacter = () => ({ name: 'Buddy', skin: 'rookie', bg: 'sun', owned: ['rookie'], purchases: [] });
+function charMood() {
+  const t = today(), n = S.habits.length, d = S.habits.filter(h => isDone(h, t)).length;
+  return !n ? 'happy' : d === n ? 'proud' : d === 0 ? 'sleepy' : 'happy';
+}
+function charSvg(id, mood = 'happy', bg = 'sun') {
+  const k = skinOf(id), v = (BACKDROPS.find(x => x.id === bg) || BACKDROPS[0]).v, ink = '#1d2433';
+  const eyes = mood === 'sleepy'
+    ? `<path d="M43 58q6 4 12 0M65 58q6 4 12 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`
+    : `<circle cx="49" cy="58" r="3.6" fill="${ink}"/><circle cx="71" cy="58" r="3.6" fill="${ink}"/>`;
+  const mouth = mood === 'proud'
+    ? `<path d="M47 66Q60 84 73 66Z" fill="${ink}"/><ellipse cx="60" cy="74.5" rx="5" ry="2.6" fill="#e8736a"/>`
+    : mood === 'sleepy' ? `<path d="M54 71h12" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`
+    : `<path d="M50 67Q60 77 70 67" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  return `<svg viewBox="0 0 120 120" role="img" aria-label="${esc(k.name)} character" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="120" style="fill:var(${v})"/><path d="M26 120Q26 84 60 84Q94 84 94 120Z" fill="${k.outfit}"/>${k.art}<circle cx="60" cy="56" r="30" fill="${k.body}"/><circle cx="42" cy="66" r="5" fill="#f08a8a" opacity=".45"/><circle cx="78" cy="66" r="5" fill="#f08a8a" opacity=".45"/>${eyes}${mouth}${k.gear}</svg>`;
+}
+
+/* ---------- seed / demo data ---------- */
+function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+function emptyState(name = 'Student') {
+  return { version: 1, user: { name }, habits: [], completions: {}, ledger: [], tasks: [], goals: [], topics: [], rewards: [], redeemed: [], badges: [], character: defaultCharacter() };
+}
+
+function seedState() {
+  const t = today();
+  const rand = mulberry32(10);
+  const s = emptyState('Daffa');
+  s.habits = [
+    { id: 'h1', name: 'Solve 5 Linear Algebra problems', icon: '📐', subject: 'Linear Algebra', xp: 15 },
+    { id: 'h2', name: "Review today's lecture notes", icon: '📖', subject: 'General', xp: 10 },
+    { id: 'h3', name: 'Find 1 real-life example of a formula', icon: '🌍', subject: 'Mechanics', xp: 15 },
+    { id: 'h4', name: 'Practice Thermodynamics questions', icon: '🔥', subject: 'Thermodynamics', xp: 15 },
+    { id: 'h5', name: 'Read 10 pages of the textbook', icon: '✍️', subject: 'General', xp: 10 },
+  ];
+  s.habits.forEach(h => s.completions[h.id] = []);
+  const done = (h, d) => { s.completions[h.id].push(d); s.ledger.push({ key: `h:${h.id}:${d}`, date: d, xp: h.xp, type: 'habit', label: h.name }); };
+  for (let i = 60; i >= 1; i--) {
+    const d = addDays(t, -i);
+    if ([7, 15, 16, 24, 31, 38, 39, 45, 52].includes(i)) continue; // rest days
+    s.habits.forEach((h, idx) => {
+      const p = i <= 6 ? 0.7 : i > 40 ? 0.35 : 0.5;
+      if (rand() < p || (i <= 6 && idx === 0)) done(h, d);
+    });
+  }
+  done(s.habits[0], t); done(s.habits[1], t);
+
+  s.tasks = [
+    { id: 'k1', title: 'IED prototype submission', subject: 'Engineering Design', due: t, done: false, xp: 25 },
+    { id: 'k2', title: 'Mechanics problem set 4', subject: 'Mechanics', due: addDays(t, 2), done: false, xp: 25 },
+    { id: 'k3', title: 'Linear Algebra quiz prep', subject: 'Linear Algebra', due: addDays(t, 5), done: false, xp: 25 },
+    { id: 'k4', title: 'Thermodynamics lab report', subject: 'Thermodynamics', due: addDays(t, 9), done: false, xp: 25 },
+    { id: 'k5', title: 'Statics homework 3', subject: 'Mechanics', due: addDays(t, -3), done: true, xp: 25 },
+    { id: 'k6', title: 'Read Chapter 2 — Vectors', subject: 'Linear Algebra', due: addDays(t, -6), done: true, xp: 25 },
+  ];
+  s.ledger.push({ key: 'k:k5', date: addDays(t, -3), xp: 25, type: 'task', label: 'Statics homework 3' });
+  s.ledger.push({ key: 'k:k6', date: addDays(t, -6), xp: 25, type: 'task', label: 'Read Chapter 2 — Vectors' });
+
+  s.goals = [
+    { id: 'g1', title: 'Finish 20 matrix exercises', target: 20, current: 18, xp: 50 },
+    { id: 'g2', title: 'Watch 5 real-world engineering videos', target: 5, current: 2, xp: 50 },
+    { id: 'g3', title: 'Explain 3 formulas to a friend', target: 3, current: 0, xp: 40 },
+  ];
+
+  s.topics = [
+    { id: 't1', subject: 'Linear Algebra', name: 'Matrix multiplication', status: 2, note: 'Like combining several spreadsheets of data at once — used in structural analysis software to solve many forces together.' },
+    { id: 't2', subject: 'Linear Algebra', name: 'Eigenvalues & eigenvectors', status: 0, note: 'Engineers use them to find the natural vibration modes of a bridge so it does not resonate with wind or footsteps.' },
+    { id: 't3', subject: 'Linear Algebra', name: 'Vector spaces', status: 1, note: '' },
+    { id: 't4', subject: 'Mechanics', name: 'Free-body diagrams', status: 2, note: 'A ceiling lamp hanging from two cables: draw gravity down and the two cable tensions pulling up at angles.' },
+    { id: 't5', subject: 'Mechanics', name: 'Moments & torque', status: 1, note: 'A longer wrench handle gives more torque with the same force — that is M = F × d.' },
+    { id: 't6', subject: 'Mechanics', name: 'Truss analysis', status: 0, note: 'Pedestrian bridges around campus are trusses: each member is only in tension or compression.' },
+    { id: 't7', subject: 'Thermodynamics', name: 'First law of thermodynamics', status: 1, note: 'A car engine turns heat from burning fuel into work; the rest is lost as heat through the exhaust.' },
+    { id: 't8', subject: 'Thermodynamics', name: 'Entropy', status: 0, note: '' },
+  ];
+  s.ledger.push({ key: 'tp:t1', date: addDays(t, -12), xp: TOPIC_XP, type: 'topic', label: 'Mastered: Matrix multiplication' });
+  s.ledger.push({ key: 'tp:t4', date: addDays(t, -4), xp: TOPIC_XP, type: 'topic', label: 'Mastered: Free-body diagrams' });
+
+  [-9, -5, -2].forEach((n, i) => s.ledger.push({ key: `f:seed${i}`, date: addDays(t, n), xp: 15, type: 'focus', label: '25-min focus session' }));
+
+  s.rewards = [
+    { id: 'r1', name: '1 hour of gaming', icon: '🎮', cost: 150 },
+    { id: 'r2', name: 'Boba treat', icon: '🧋', cost: 200 },
+    { id: 'r3', name: 'Sleep in on Saturday', icon: '😴', cost: 250 },
+    { id: 'r4', name: 'Movie night', icon: '🎬', cost: 300 },
+  ];
+  s.redeemed = [{ id: uid(), name: 'Boba treat', icon: '🧋', cost: 200, date: addDays(t, -6) }];
+  s.badges = unlockedBadges(s);
+  return s;
+}
+
+/* ---------- persistence ---------- */
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) { const s = JSON.parse(raw); if (s && s.version === 1) { if (!s.character) s.character = defaultCharacter(); return s; } }
+  } catch (e) { /* storage unavailable — fall back to demo data */ }
+  return seedState();
+}
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {} }
+
+let S; // loaded in init, after all helpers are defined
+let view = 'dashboard';
+let taskFilter = 'open';
+let topicFilter = 'All';
+
+/* ---------- derived stats ---------- */
+const xpTotal = (s = S) => s.ledger.reduce((a, e) => a + e.xp, 0);
+const spent = (s = S) => s.redeemed.reduce((a, e) => a + e.cost, 0) + ((s.character && s.character.purchases) || []).reduce((a, e) => a + e.cost, 0);
+const points = (s = S) => xpTotal(s) - spent(s);
+const needFor = L => 100 + (L - 1) * 50;
+function levelInfo(xp) {
+  let L = 1, rem = xp;
+  while (rem >= needFor(L)) { rem -= needFor(L); L++; }
+  return { level: L, into: rem, need: needFor(L), pct: rem / needFor(L) };
+}
+function activeDays(s = S) {
+  const set = new Set();
+  Object.values(s.completions).forEach(a => a.forEach(d => set.add(d)));
+  return set;
+}
+function streakFrom(set) {
+  let d = today(); if (!set.has(d)) d = addDays(d, -1);
+  let n = 0; while (set.has(d)) { n++; d = addDays(d, -1); }
+  return n;
+}
+const currentStreak = (s = S) => streakFrom(activeDays(s));
+const habitStreak = h => streakFrom(new Set(S.completions[h.id] || []));
+function bestStreak(s = S) {
+  const days = [...activeDays(s)].sort();
+  let best = 0, run = 0, prev = null;
+  for (const d of days) { run = prev && diffDays(d, prev) === 1 ? run + 1 : 1; best = Math.max(best, run); prev = d; }
+  return best;
+}
+const isDone = (h, d) => (S.completions[h.id] || []).includes(d);
+
+function statsOf(s = S) {
+  const xp = xpTotal(s);
+  return {
+    xp, level: levelInfo(xp).level, best: bestStreak(s),
+    checkins: Object.values(s.completions).reduce((a, x) => a + x.length, 0),
+    tasks: s.tasks.filter(t => t.done).length,
+    mastered: s.topics.filter(t => t.status === 2).length,
+    goals: s.goals.filter(g => g.current >= g.target).length,
+    focus: s.ledger.filter(e => e.type === 'focus').length,
+    redeemed: s.redeemed.length,
+    skins: ((s.character && s.character.purchases) || []).length,
+  };
+}
+
+const BADGES = [
+  { id: 'first', icon: '🌱', name: 'First Step', desc: 'Complete your first study habit', of: st => [st.checkins, 1] },
+  { id: 'streak3', icon: '🔥', name: 'On Fire', desc: 'Reach a 3-day streak', of: st => [st.best, 3] },
+  { id: 'streak7', icon: '⚡', name: 'Week Warrior', desc: 'Reach a 7-day streak', of: st => [st.best, 7] },
+  { id: 'streak14', icon: '🏔️', name: 'Unstoppable', desc: 'Reach a 14-day streak', of: st => [st.best, 14] },
+  { id: 'tasks5', icon: '✅', name: 'Task Slayer', desc: 'Complete 5 tasks', of: st => [st.tasks, 5] },
+  { id: 'topic3', icon: '🧠', name: 'Concept Master', desc: 'Master 3 topics', of: st => [st.mastered, 3] },
+  { id: 'goal1', icon: '🎯', name: 'Goal Getter', desc: 'Complete a learning goal', of: st => [st.goals, 1] },
+  { id: 'focus5', icon: '⏱️', name: 'Deep Focus', desc: 'Finish 5 focus sessions', of: st => [st.focus, 5] },
+  { id: 'reward', icon: '🎁', name: 'Treat Yourself', desc: 'Redeem a reward', of: st => [st.redeemed, 1] },
+  { id: 'skin', icon: '🎨', name: 'Fresh Fit', desc: 'Buy your first character skin', of: st => [st.skins, 1] },
+  { id: 'lvl5', icon: '🏅', name: 'Scholar', desc: 'Reach level 5', of: st => [st.level, 5] },
+  { id: 'lvl10', icon: '👑', name: 'Legend', desc: 'Reach level 10', of: st => [st.level, 10] },
+  { id: 'xp2500', icon: '💎', name: 'XP Hoarder', desc: 'Earn 2,500 XP in total', of: st => [st.xp, 2500] },
+];
+function unlockedBadges(s) {
+  const st = statsOf(s);
+  return BADGES.filter(b => { const [c, t] = b.of(st); return c >= t; }).map(b => b.id);
+}
+
+/* ---------- mutations ---------- */
+function mutate(fn) {
+  const xp0 = xpTotal(), lv0 = levelInfo(xp0).level;
+  fn();
+  const xp1 = xpTotal(), lv1 = levelInfo(xp1).level;
+  if (xp1 > xp0) toast(`+${xp1 - xp0} XP earned`);
+  if (lv1 > lv0) { toast(`🎉 Level up! You're now level ${lv1} — ${levelTitle(lv1)}`); confetti(); }
+  const fresh = unlockedBadges(S).filter(id => !S.badges.includes(id));
+  if (fresh.length) {
+    S.badges.push(...fresh);
+    fresh.forEach(id => { const b = BADGES.find(x => x.id === id); toast(`${b.icon} Badge unlocked: ${b.name}`); });
+    if (lv1 <= lv0) confetti();
+  }
+  save();
+  render();
+}
+const removeLedger = key => { S.ledger = S.ledger.filter(e => e.key !== key); };
+
+function toggleHabit(id, date) {
+  const h = S.habits.find(x => x.id === id);
+  if (!h || diffDays(date, today()) > 0) return;
+  mutate(() => {
+    const list = S.completions[id] || (S.completions[id] = []);
+    const key = `h:${id}:${date}`;
+    if (list.includes(date)) { S.completions[id] = list.filter(d => d !== date); removeLedger(key); }
+    else { list.push(date); S.ledger.push({ key, date, xp: h.xp, type: 'habit', label: h.name }); }
+  });
+}
+
+/* ---------- rendering ---------- */
+function render() {
+  const v = VIEWS.find(x => x.id === view);
+  $('#pageTitle').textContent = v.label;
+  $('#pageSub').textContent = v.sub;
+  document.title = `${v.label} · StudyQuest`;
+  renderNav(); renderPills(); renderMiniLevel();
+  $('#view').innerHTML = ({ dashboard: viewDashboard, habits: viewHabits, tasks: viewTasks, topics: viewTopics, rewards: viewRewards, character: viewCharacter, about: viewAbout })[view]();
+  if (view === 'dashboard') updateTimer(true);
+}
+
+function renderNav() {
+  const html = VIEWS.map(v => `<button class="nav-btn ${v.id === view ? 'active' : ''}" data-action="nav" data-view="${v.id}" ${v.id === view ? 'aria-current="page"' : ''}>${svg(v.id)}<span>${v.id === 'tasks' && window.innerWidth <= 860 ? 'Tasks' : v.label}</span></button>`).join('');
+  $('#sideNav').innerHTML = html;
+  $('#bottomNav').innerHTML = html;
+}
+function renderPills() {
+  const lv = levelInfo(xpTotal());
+  const dark = document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+  $('#pills').innerHTML = `
+    <span class="pill" title="Current streak">🔥 ${currentStreak()}</span>
+    <span class="pill" title="Spendable points">🪙 ${fmtNum(points())}</span>
+    <span class="pill hide-sm" title="Level">⭐ Lv ${lv.level}</span>
+    <button class="icon-btn" data-action="theme" aria-label="Toggle dark mode">${svg(dark ? 'sun' : 'moon')}</button>`;
+}
+function renderMiniLevel() {
+  const lv = levelInfo(xpTotal());
+  $('#miniLevel').innerHTML = `<div class="row"><span>Level ${lv.level} · ${levelTitle(lv.level)}</span><span class="muted">${Math.round(lv.pct * 100)}%</span></div>
+    <div class="bar"><i style="width:${lv.pct * 100}%"></i></div>
+    <div class="small muted" style="margin-top:6px">${lv.need - lv.into} XP to level ${lv.level + 1}</div>`;
+}
+
+const checkSvg = () => svg('check');
+function habitRow(h, d) {
+  const done = isDone(h, d), st = habitStreak(h);
+  return `<button class="habit-row ${done ? 'done' : ''}" data-action="toggleHabit" data-id="${h.id}" data-date="${d}" aria-pressed="${done}">
+    <span class="check">${checkSvg()}</span>
+    <span class="h-icon">${esc(h.icon)}</span>
+    <span class="h-main"><span class="h-name">${esc(h.name)}</span><span class="h-meta">${esc(h.subject || 'General')}${st ? ` · 🔥 ${st}-day streak` : ''}</span></span>
+    <span class="xp-chip">+${h.xp} XP</span>
+  </button>`;
+}
+function dueLabel(due, done) {
+  if (!due) return '';
+  const n = diffDays(due, today());
+  if (done) return `<span class="due">${fmtShort(due)}</span>`;
+  if (n < 0) return `<span class="due over">${-n}d overdue</span>`;
+  if (n === 0) return `<span class="due soon">Due today</span>`;
+  if (n === 1) return `<span class="due soon">Due tomorrow</span>`;
+  return `<span class="due">In ${n} days</span>`;
+}
+
+/* ----- Dashboard ----- */
+function viewDashboard() {
+  const t = today(), lv = levelInfo(xpTotal());
+  const doneToday = S.habits.filter(h => isDone(h, t)).length, total = S.habits.length;
+  const streak = currentStreak(), best = bestStreak();
+  const hr = new Date().getHours();
+  const greet = hr < 11 ? 'Good morning' : hr < 15 ? 'Good afternoon' : hr < 19 ? 'Good evening' : 'Good night';
+  let line;
+  if (!total) line = 'Add your first study habit to start your streak.';
+  else if (doneToday === total) line = 'All habits done today — amazing work! 🎉';
+  else if (doneToday === 0 && streak) line = `Complete one habit today to keep your ${streak}-day streak alive!`;
+  else line = `${total - doneToday} habit${total - doneToday > 1 ? 's' : ''} left today. Small steps, big progress.`;
+
+  const upcoming = S.tasks.filter(k => !k.done).sort((a, b) => (a.due || '9') < (b.due || '9') ? -1 : 1).slice(0, 4);
+  const st = statsOf();
+  const next = BADGES.filter(b => !S.badges.includes(b.id))
+    .map(b => { const [c, tg] = b.of(st); return { ...b, c: Math.min(c, tg), tg, pct: Math.min(c / tg, 1) }; })
+    .sort((a, b) => b.pct - a.pct)[0];
+  const pct = total ? doneToday / total : 0;
+  const R = 17, C = 2 * Math.PI * R;
+
+  return `
+  <section class="card hero">
+    <div class="hero-me">
+      <button class="avatar" data-action="nav" data-view="character" title="Customize your character">${charSvg(S.character.skin, charMood(), S.character.bg)}</button>
+      <div>
+      <p class="eyebrow">${parseKey(t).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+      <h1>${greet}, <button class="name-btn" data-action="rename" title="Change name">${esc(S.user.name)}</button> 👋</h1>
+      <p class="muted">${line}</p>
+      </div>
+    </div>
+    <div class="level-card">
+      <div class="level-badge"><small>Level</small><b>${lv.level}</b></div>
+      <div class="info">
+        <div class="title">${levelTitle(lv.level)}</div>
+        <div class="bar" style="margin-top:8px"><i style="width:${lv.pct * 100}%"></i></div>
+        <div class="xp-line">${lv.into} / ${lv.need} XP · ${fmtNum(xpTotal())} XP total</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="card stat"><div class="ico" style="background:var(--red-soft)">🔥</div><div><div class="val">${streak} day${streak === 1 ? '' : 's'}</div><div class="lbl">Streak · best ${best}</div></div></div>
+    <div class="card stat"><div class="ico" style="background:var(--accent-soft)">🪙</div><div><div class="val">${fmtNum(points())}</div><div class="lbl">Points to spend</div></div></div>
+    <div class="card stat">
+      <div class="ico" style="background:var(--green-soft)">
+        <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="${R}" fill="none" stroke="var(--border)" stroke-width="5"/><circle cx="20" cy="20" r="${R}" fill="none" stroke="var(--green)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct)}" transform="rotate(-90 20 20)"/></svg>
+      </div>
+      <div><div class="val">${doneToday}/${total}</div><div class="lbl">Habits done today</div></div>
+    </div>
+    <div class="card stat"><div class="ico" style="background:var(--purple-soft)">🏆</div><div><div class="val">${S.badges.length}/${BADGES.length}</div><div class="lbl">Badges earned</div></div></div>
+  </section>
+
+  <section class="grid-2">
+    <div class="card">
+      <div class="card-head"><h2>Today's study habits</h2><button class="btn sm" data-action="nav" data-view="habits">Manage</button></div>
+      <div class="habit-list">${total ? S.habits.map(h => habitRow(h, t)).join('') : `<div class="empty">No habits yet. <button class="link" data-action="addHabit">Add one</button></div>`}</div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-head"><h2>Focus session</h2><span class="small muted">Earn XP for deep work</span></div>
+        <div class="timer-digits" id="timerDigits">25:00</div>
+        <div class="bar"><i id="timerBar" style="width:0%"></i></div>
+        <div class="timer-btns" id="timerBtns"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Coming up</h2><button class="btn sm" data-action="nav" data-view="tasks">All tasks</button></div>
+        ${upcoming.length ? upcoming.map(k => `<div class="task-mini"><span class="t">${esc(k.title)}</span>${dueLabel(k.due, false)}</div>`).join('') : '<div class="empty">Nothing due — nice!</div>'}
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Study activity · last ${WEEKS} weeks</h2>
+      <div class="legend">Less <span class="hc"></span><span class="hc l1"></span><span class="hc l2"></span><span class="hc l3"></span><span class="hc l4"></span> More</div>
+    </div>
+    ${heatmap()}
+  </section>
+
+  ${next ? `<section class="card next-badge">
+    <div class="badge-ico">${next.icon}</div>
+    <div style="flex:1;min-width:0">
+      <div class="small muted" style="font-weight:700">NEXT BADGE</div>
+      <div style="font-weight:800">${next.name} <span class="muted small" style="font-weight:600">— ${next.desc}</span></div>
+      <div class="bar" style="margin-top:8px"><i style="width:${next.pct * 100}%;background:var(--purple)"></i></div>
+    </div>
+    <div style="font-weight:800;white-space:nowrap">${fmtNum(next.c)} / ${fmtNum(next.tg)}</div>
+  </section>` : ''}`;
+}
+
+const WEEKS = 18;
+function heatmap() {
+  const t = today(), dayXp = {};
+  S.ledger.forEach(e => dayXp[e.date] = (dayXp[e.date] || 0) + e.xp);
+  const dow = (parseKey(t).getDay() + 6) % 7;
+  const start = addDays(t, -(dow + 7 * (WEEKS - 1)));
+  let cols = '', lastMonth = -1;
+  for (let w = 0; w < WEEKS; w++) {
+    const first = parseKey(addDays(start, w * 7));
+    const m = first.getMonth();
+    let cells = `<span class="mlabel">${m !== lastMonth ? first.toLocaleDateString('en-GB', { month: 'short' }) : ''}</span>`;
+    lastMonth = m;
+    for (let d = 0; d < 7; d++) {
+      const k = addDays(start, w * 7 + d), fut = diffDays(k, t) > 0, x = dayXp[k] || 0;
+      const lv = fut ? 'f' : x === 0 ? 0 : x <= 15 ? 1 : x <= 35 ? 2 : x <= 55 ? 3 : 4;
+      cells += `<span class="hc l${lv} ${k === t ? 'today' : ''}" title="${fut ? fmtLong(k) : `${fmtLong(k)}: ${x} XP`}"></span>`;
+    }
+    cols += `<div class="hcol">${cells}</div>`;
+  }
+  return `<div class="heat-wrap"><div class="heat-days"><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span><span>Sun</span></div><div class="heat-grid">${cols}</div></div>`;
+}
+
+/* ----- Habits ----- */
+function viewHabits() {
+  const t = today();
+  const week = [...Array(7)].map((_, i) => addDays(t, i - 6));
+  const weekCount = S.habits.reduce((a, h) => a + week.filter(d => isDone(h, d)).length, 0);
+  return `
+  <div class="card-head" style="margin:0">
+    <p class="muted">${S.habits.length} habits · ${weekCount} check-ins in the last 7 days. Tap a day to log or undo it.</p>
+    <button class="btn primary" data-action="addHabit">+ New habit</button>
+  </div>
+  ${S.habits.length ? `<div class="habit-cards">${S.habits.map(h => {
+    const st = habitStreak(h), total = (S.completions[h.id] || []).length;
+    return `<div class="card habit-card">
+      <div class="top">
+        <div class="big-ico">${esc(h.icon)}</div>
+        <div style="flex:1;min-width:0"><h3>${esc(h.name)}</h3><div class="t-meta"><span class="chip">${esc(h.subject || 'General')}</span><span class="xp-chip">+${h.xp} XP</span></div></div>
+      </div>
+      <div class="week-dots">${week.map(d => {
+        const on = isDone(h, d);
+        return `<button class="dot-btn ${on ? 'on' : ''} ${d === t ? 'is-today' : ''}" data-action="toggleHabit" data-id="${h.id}" data-date="${d}" title="${fmtLong(d)}" aria-pressed="${on}"><span>${checkSvg()}</span>${DOW[(parseKey(d).getDay() + 6) % 7]}</button>`;
+      }).join('')}</div>
+      <div class="foot">
+        <span class="small"><b>🔥 ${st}</b> <span class="muted">day streak · ${total} total</span></span>
+        <span><button class="btn sm ghost" data-action="editHabit" data-id="${h.id}">Edit</button><button class="del" data-action="delHabit" data-id="${h.id}" aria-label="Delete habit" style="display:inline-grid;vertical-align:middle">${svg('trash')}</button></span>
+      </div>
+    </div>`;
+  }).join('')}</div>` : `<div class="empty">No habits yet — try “Review lecture notes” or “Solve 5 practice problems”.</div>`}`;
+}
+
+/* ----- Tasks & Goals ----- */
+function viewTasks() {
+  let tasks = S.tasks.slice().sort((a, b) => (a.done - b.done) || ((a.due || '9') < (b.due || '9') ? -1 : 1));
+  if (taskFilter === 'open') tasks = tasks.filter(k => !k.done);
+  if (taskFilter === 'done') tasks = tasks.filter(k => k.done);
+  return `
+  <section class="grid-even">
+    <div class="card">
+      <div class="card-head"><h2>Tasks</h2><button class="btn primary sm" data-action="addTask">+ Task</button></div>
+      <div class="seg" style="margin-bottom:8px">${['open', 'done', 'all'].map(f => `<button class="${taskFilter === f ? 'on' : ''}" data-action="taskFilter" data-f="${f}">${f[0].toUpperCase() + f.slice(1)}</button>`).join('')}</div>
+      ${tasks.length ? tasks.map(k => `
+        <div class="task-row ${k.done ? 'done' : ''}">
+          <button class="check" data-action="toggleTask" data-id="${k.id}" aria-label="${k.done ? 'Mark as not done' : 'Mark as done'}" aria-pressed="${k.done}">${checkSvg()}</button>
+          <div class="t-main"><div class="t-title">${esc(k.title)}</div>
+            <div class="t-meta">${k.subject ? `<span class="chip">${esc(k.subject)}</span>` : ''}${dueLabel(k.due, k.done)}<span class="xp-chip">+${k.xp} XP</span></div></div>
+          <button class="del" data-action="delTask" data-id="${k.id}" aria-label="Delete task">${svg('trash')}</button>
+        </div>`).join('') : `<div class="empty">${taskFilter === 'done' ? 'No completed tasks yet.' : 'No open tasks. 🎉'}</div>`}
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Learning goals</h2><button class="btn primary sm" data-action="addGoal">+ Goal</button></div>
+      <p class="small muted" style="margin-bottom:4px">Break a big target into countable steps. Finishing a goal awards bonus XP.</p>
+      ${S.goals.length ? S.goals.map(g => {
+        const done = g.current >= g.target;
+        return `<div class="goal ${done ? 'complete' : ''}">
+          <div class="g-top"><span class="g-title">${esc(g.title)}</span><span class="xp-chip">+${g.xp} XP</span><button class="del" data-action="delGoal" data-id="${g.id}" aria-label="Delete goal">${svg('trash')}</button></div>
+          <div class="g-ctrl">
+            <button class="step-btn" data-action="goalStep" data-id="${g.id}" data-d="-1" aria-label="Decrease" ${g.current <= 0 ? 'disabled' : ''}>−</button>
+            <div class="bar ${done ? 'green' : ''}"><i style="width:${Math.min(g.current / g.target, 1) * 100}%"></i></div>
+            <button class="step-btn" data-action="goalStep" data-id="${g.id}" data-d="1" aria-label="Increase" ${done ? 'disabled' : ''}>+</button>
+            <b class="small" style="min-width:48px;text-align:right">${g.current}/${g.target}</b>
+          </div>
+        </div>`;
+      }).join('') : '<div class="empty">No goals yet.</div>'}
+    </div>
+  </section>`;
+}
+
+/* ----- Topics ----- */
+function viewTopics() {
+  const subjects = [...new Set(S.topics.map(t => t.subject))];
+  if (topicFilter !== 'All' && !subjects.includes(topicFilter)) topicFilter = 'All';
+  const list = S.topics.filter(t => topicFilter === 'All' || t.subject === topicFilter);
+  return `
+  <section class="card">
+    <div class="card-head"><h2>Mastery by subject</h2><button class="btn primary sm" data-action="addTopic">+ Topic</button></div>
+    ${subjects.length ? `<div class="mastery">${subjects.map(s => {
+      const ts = S.topics.filter(t => t.subject === s), m = ts.filter(t => t.status === 2).length;
+      return `<div><div class="m-row"><span>${esc(s)}</span><span class="muted">${m}/${ts.length} mastered</span></div><div class="bar green"><i style="width:${ts.length ? m / ts.length * 100 : 0}%"></i></div></div>`;
+    }).join('')}</div>` : '<p class="muted">Add the topics from your courses and sort them by how well you understand them.</p>'}
+  </section>
+  <div class="filters">${['All', ...subjects].map(s => `<button class="filter ${topicFilter === s ? 'on' : ''}" data-action="topicFilter" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+  <section class="board">
+    ${STATUS.map((st, i) => {
+      const items = list.filter(t => t.status === i);
+      return `<div class="col">
+        <div class="col-head"><span class="col-dot" style="background:${st.color}"></span>${st.label}<span class="count">${items.length}</span></div>
+        ${items.map(t => `<div class="topic s${i}">
+          <div class="tp-top"><span class="chip">${esc(t.subject)}</span><button class="del" data-action="delTopic" data-id="${t.id}" aria-label="Delete topic">${svg('trash')}</button></div>
+          <h4>${esc(t.name)}</h4>
+          ${t.note ? `<details><summary>🌍 Real-life example</summary><p>${esc(t.note)}</p></details>` : `<button class="link small" style="text-align:left" data-action="noteTopic" data-id="${t.id}">+ Add a real-life example</button>`}
+          <div class="tp-actions">
+            ${i > 0 ? `<button class="btn sm" data-action="moveTopic" data-id="${t.id}" data-d="-1">← ${STATUS[i - 1].label}</button>` : '<span></span>'}
+            ${i < 2 ? `<button class="btn sm ${i === 1 ? 'primary' : ''}" data-action="moveTopic" data-id="${t.id}" data-d="1">${STATUS[i + 1].label} →${i === 1 ? ` +${TOPIC_XP}` : ''}</button>` : ''}
+          </div>
+        </div>`).join('') || '<div class="empty small">Nothing here</div>'}
+      </div>`;
+    }).join('')}
+  </section>`;
+}
+
+/* ----- Rewards ----- */
+const LEDGER_ICON = { habit: '✅', task: '📝', goal: '🎯', topic: '🧠', focus: '⏱️' };
+function viewRewards() {
+  const pts = points(), st = statsOf();
+  const history = [
+    ...S.ledger.map(e => ({ date: e.date, icon: LEDGER_ICON[e.type] || '⭐', label: e.label, amt: e.xp })),
+    ...S.redeemed.map(r => ({ date: r.date, icon: r.icon, label: `Redeemed: ${r.name}`, amt: -r.cost })),
+    ...S.character.purchases.map(p => ({ date: p.date, icon: '🎨', label: `Bought skin: ${p.name}`, amt: -p.cost })),
+  ].sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 12);
+  return `
+  <section class="card balance">
+    <div class="coin">🪙</div>
+    <div style="flex:1"><div class="val">${fmtNum(pts)} points</div><div class="muted small">Earned ${fmtNum(xpTotal())} XP · spent ${fmtNum(spent())} on rewards and skins. Every XP you earn is also a point you can spend.</div></div>
+  </section>
+
+  <section>
+    <div class="card-head"><h2>Reward shop</h2><button class="btn primary sm" data-action="addReward">+ Reward</button></div>
+    ${S.rewards.length ? `<div class="shop">${S.rewards.map(r => `
+      <div class="card reward">
+        <button class="del" data-action="delReward" data-id="${r.id}" aria-label="Delete reward">${svg('trash')}</button>
+        <div class="r-ico">${esc(r.icon)}</div>
+        <div class="r-name">${esc(r.name)}</div>
+        <div class="xp-chip">🪙 ${fmtNum(r.cost)}</div>
+        <button class="btn ${pts >= r.cost ? 'primary' : ''} sm" data-action="redeem" data-id="${r.id}" ${pts < r.cost ? 'disabled' : ''}>${pts >= r.cost ? 'Redeem' : `Need ${fmtNum(r.cost - pts)} more`}</button>
+      </div>`).join('')}</div>` : '<div class="empty">Add rewards you will give yourself after studying.</div>'}
+  </section>
+
+  <section>
+    <div class="card-head"><h2>Badges &amp; milestones</h2><span class="small muted">${S.badges.length} of ${BADGES.length} unlocked</span></div>
+    <div class="badges">${BADGES.map(b => {
+      const un = S.badges.includes(b.id), [c, tg] = b.of(st);
+      return `<div class="badge ${un ? 'unlocked' : 'locked'}">
+        <div class="b-ico">${b.icon}</div><div class="b-name">${b.name}</div><div class="b-desc">${b.desc}</div>
+        ${un ? '<span class="small" style="color:var(--purple);font-weight:700">Unlocked</span>' : `<div class="bar"><i style="width:${Math.min(c / tg, 1) * 100}%;background:var(--purple)"></i></div><span class="small muted">${fmtNum(Math.min(c, tg))} / ${fmtNum(tg)}</span>`}
+      </div>`;
+    }).join('')}</div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Recent activity</h2></div>
+    ${history.length ? history.map(h => `<div class="ledger-row"><span class="l-ico">${esc(h.icon)}</span><div class="l-main">${esc(h.label)}<div class="small muted">${fmtLong(h.date)}</div></div><span class="amt ${h.amt > 0 ? 'plus' : 'minus'}">${h.amt > 0 ? '+' : ''}${fmtNum(h.amt)}</span></div>`).join('') : '<div class="empty">No activity yet.</div>'}
+  </section>`;
+}
+
+/* ----- Character ----- */
+function viewCharacter() {
+  const C = S.character, pts = points(), lv = levelInfo(xpTotal()).level, mood = charMood(), cur = skinOf(C.skin);
+  return `
+  <section class="card char-stage">
+    <div class="char-big">${charSvg(C.skin, mood, C.bg)}</div>
+    <div>
+      <p class="eyebrow">Your study buddy</p>
+      <h2><button class="name-btn" data-action="renameChar" title="Rename your character">${esc(C.name)}</button></h2>
+      <p class="muted">${MOOD_TEXT[mood]}</p>
+      <div class="t-meta" style="margin-top:10px"><span class="rar ${cur.rar}">${cur.rar}</span><b>${cur.name}</b></div>
+      <div class="label">Backdrop</div>
+      <div class="swatches">${BACKDROPS.map(b => `<button class="swatch ${C.bg === b.id ? 'on' : ''}" style="background:var(${b.v})" data-action="bg" data-id="${b.id}" aria-label="Backdrop ${b.id}" aria-pressed="${C.bg === b.id}"></button>`).join('')}</div>
+      <div class="pill" style="margin-top:16px">🪙 ${fmtNum(pts)} points to spend</div>
+    </div>
+  </section>
+  <section>
+    <div class="card-head"><h2>Skin shop</h2><span class="small muted">${C.owned.length} of ${SKINS.length} owned</span></div>
+    <div class="skins">${SKINS.map(k => {
+      const owned = C.owned.includes(k.id), on = C.skin === k.id, locked = !owned && lv < k.lvl;
+      const btn = on ? `<button class="btn sm" disabled>Equipped ✓</button>`
+        : owned ? `<button class="btn sm" data-action="skinEquip" data-id="${k.id}">Equip</button>`
+        : locked ? `<button class="btn sm" disabled>Reach level ${k.lvl}</button>`
+        : pts < k.cost ? `<button class="btn sm" disabled>Need ${fmtNum(k.cost - pts)} more</button>`
+        : `<button class="btn primary sm" data-action="skinBuy" data-id="${k.id}">Buy skin</button>`;
+      return `<div class="card skin ${on ? 'equipped' : ''} ${locked ? 'locked' : ''}">
+        <div class="skin-art">${charSvg(k.id, mood, C.bg)}</div>
+        <div class="row"><span class="s-name">${k.name}</span><span class="rar ${k.rar}">${k.rar}</span></div>
+        <div class="row"><span class="xp-chip">${owned ? 'Owned' : k.cost ? `🪙 ${fmtNum(k.cost)}` : 'Free'}</span>${btn}</div>
+      </div>`;
+    }).join('')}</div>
+  </section>`;
+}
+
+/* ----- About ----- */
+function viewAbout() {
+  return `
+  <section class="card about">
+    <p class="eyebrow">Introduction to Engineering Design · Group 10 · Universitas Indonesia</p>
+    <h2 style="font-size:24px">StudyQuest — a gamified study habit tracker</h2>
+    <p>StudyQuest is the prototype for our final proposal from Group Task 04. It turns studying into a game: students log daily study habits, keep streaks, track assignments and learning goals, sort course topics by how well they understand them, and earn XP, levels, badges and rewards along the way.</p>
+    <p class="quote" style="margin-top:14px">“We propose creating a gamified Notion study template that allows students to track their study progress, set learning goals, and monitor completed tasks. The template will incorporate simple gamification elements, such as progress tracking, points, and milestones, to make studying more engaging and encourage students to stay consistent with their academic responsibilities.”<br><span class="small muted">— Final Statement, Group Task 04</span></p>
+    <p style="margin-top:14px">We built the prototype as an interactive web app instead of a static Notion template so that the gamification (points, levels, streaks and badges) updates automatically and can be tested by real users.</p>
+  </section>
+
+  <section class="card about">
+    <h2>Our design-thinking journey</h2>
+    <div class="process">
+      <div class="step"><span class="n">GROUP TASK 01</span><b>Problem identification</b><p>Practised the What / Who / Why canvas on campus problems.</p></div>
+      <div class="step"><span class="n">GROUP TASK 02</span><b>Empathize</b><p>Interviewed 3 students about learning experience and effectiveness and built empathy maps.</p></div>
+      <div class="step"><span class="n">GROUP TASK 03</span><b>Define</b><p>Wrote POV and How-Might-We statements for each interviewee.</p></div>
+      <div class="step"><span class="n">GROUP TASK 04</span><b>Ideate</b><p>Brainstormed ideas per HMW, scored them in a decision matrix and an effort–impact matrix.</p></div>
+      <div class="step"><span class="n">THIS TASK</span><b>Prototype</b><p>This website — a working version of the chosen idea.</p></div>
+    </div>
+  </section>
+
+  <section class="card about">
+    <h2>Who we designed for</h2>
+    <div class="grid-even" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+      <div class="persona"><b>Daffa · Civil Engineering</b><p class="small muted">Understands formulas but not always their real-life use, doesn't know how to check his answers, and needs help keeping study momentum.</p></div>
+      <div class="persona"><b>Wafiyyah · Fiscal Administration</b><p class="small muted">Deals with a lot of numerical information and English-language material, and wants clearer, more visual ways to understand it.</p></div>
+      <div class="persona"><b>Cleantha · Fiscal Administration</b><p class="small muted">Gets feedback that is too general and wants to know exactly what to improve and what to study next.</p></div>
+    </div>
+    <p style="margin-top:16px"><b>Point of view:</b> Daffa needs a way to bridge theoretical formulas with real-world engineering applications because abstract concepts without practical context make it difficult for him to verify his work and stay motivated.</p>
+    <p><b>How might we</b> help Daffa connect abstract engineering formulas to practical, real-world examples so he can independently verify his solutions and maintain study momentum?</p>
+  </section>
+
+  <section class="card about">
+    <h2>How the brainstorm became features</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Feature in StudyQuest</th><th>Idea from Group Task 04</th><th>User need it answers</th></tr></thead>
+      <tbody>
+        <tr><td><b>XP, levels, points &amp; badges</b></td><td>Gamified Notion study progress dashboard (Dzaky) — selected idea</td><td>Makes studying more engaging and keeps students consistent</td></tr>
+        <tr><td><b>Daily habits &amp; streaks</b></td><td>Daily learning streak with small achievable goals (Reshad)</td><td>Maintaining study momentum</td></tr>
+        <tr><td><b>Topic board: Struggling → Learning → Mastered</b></td><td>Topic difficulty tracker (Reshad)</td><td>Knowing which materials need more attention and what to study next</td></tr>
+        <tr><td><b>Simple explanation / real-life example on each topic</b></td><td>Simplified study notes (Tristan)</td><td>Connecting abstract formulas to real-world applications</td></tr>
+        <tr><td><b>Reward shop</b></td><td>Study reward system with small rewards after targets (Nouvall)</td><td>Motivation to finish study targets</td></tr>
+        <tr><td><b>Tasks &amp; learning goals</b></td><td>Final statement: “set learning goals and monitor completed tasks”</td><td>Tracking academic responsibilities</td></tr>
+        <tr><td><b>Focus sessions &amp; activity heatmap</b></td><td>Final statement: “progress tracking”</td><td>Seeing progress over time and staying engaged</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="grid-even">
+    <div class="card about">
+      <h2>How to try it</h2>
+      <ol class="howto">
+        <li>Tick a habit on the <b>Dashboard</b> — watch your XP, streak and level update.</li>
+        <li>Start a <b>focus session</b> and finish it to earn bonus XP.</li>
+        <li>On <b>Topics</b>, move “Eigenvalues” to Learning, then Mastered to unlock the <i>Concept Master</i> badge.</li>
+        <li>Press <b>+</b> on “Finish 20 matrix exercises” in <b>Tasks &amp; Goals</b> to complete a goal.</li>
+        <li>Spend your points in the <b>Reward shop</b>.</li>
+      </ol>
+      <p class="small muted" style="margin-top:12px">The app opens with demo data for our persona, Daffa. Everything is saved in your own browser; nothing is sent anywhere.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+        <button class="btn sm" data-action="resetDemo">Reset demo data</button>
+        <button class="btn sm danger" data-action="clearAll">Start with a blank tracker</button>
+      </div>
+    </div>
+    <div class="card about">
+      <h2>Group 10</h2>
+      <table>
+        <thead><tr><th>Name</th></tr></thead>
+        <tbody>
+          <tr><td>Dzaky Fawwaz Zulmi</td></tr>
+          <tr><td>Nouvall Ananda Vedrila</td></tr>
+          <tr><td>Reshad Athaya Putra</td></tr>
+          <tr><td>Tengku Tristan Mochtar</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+/* ---------- focus timer ---------- */
+const T = { status: 'idle', minutes: 25, total: 0, endAt: 0, remaining: 25 * 60 * 1000 };
+const focusXp = m => Math.max(5, Math.round(m * 0.6));
+function timerButtons() {
+  if (T.status === 'idle') return [1, 15, 25, 50].map(m => `<button class="btn sm ${m === 25 ? 'primary' : ''}" data-action="timerStart" data-m="${m}">${m} min${m === 1 ? ' (demo)' : ''}</button>`).join('');
+  return `${T.status === 'running' ? '<button class="btn sm" data-action="timerPause">Pause</button>' : '<button class="btn sm primary" data-action="timerResume">Resume</button>'}
+    <button class="btn sm ghost" data-action="timerCancel">Cancel</button>`;
+}
+function updateTimer(buttons) {
+  const dg = $('#timerDigits'); if (!dg) return;
+  if (T.status === 'running') T.remaining = Math.max(0, T.endAt - Date.now());
+  const s = Math.ceil(T.remaining / 1000);
+  dg.textContent = `${pad(Math.floor(s / 60))}:${pad(s % 60)}`;
+  $('#timerBar').style.width = T.total ? `${(1 - T.remaining / T.total) * 100}%` : '0%';
+  if (buttons) {
+    $('#timerBtns').innerHTML = timerButtons();
+    const hint = T.status === 'idle' ? `Finish a session for +${focusXp(25)} XP (25 min)` : `${T.minutes}-min session · +${focusXp(T.minutes)} XP when done`;
+    dg.title = hint;
+    $('#timerBtns').insertAdjacentHTML('beforeend', `<div class="small muted" style="width:100%;text-align:center">${hint}</div>`);
+  }
+}
+setInterval(() => {
+  if (T.status !== 'running') return;
+  T.remaining = Math.max(0, T.endAt - Date.now());
+  if (T.remaining <= 0) {
+    const m = T.minutes;
+    Object.assign(T, { status: 'idle', total: 0, remaining: 25 * 60 * 1000 });
+    mutate(() => S.ledger.push({ key: `f:${Date.now()}`, date: today(), xp: focusXp(m), type: 'focus', label: `${m}-min focus session` }));
+    return;
+  }
+  updateTimer(false);
+}, 250);
+
+/* ---------- modal forms ---------- */
+function subjectsList() { return [...new Set([...S.habits, ...S.tasks, ...S.topics].map(x => x.subject).filter(Boolean))]; }
+function fieldHtml(f) {
+  const id = `f_${f.name}`;
+  const req = f.required ? 'required' : '';
+  let input;
+  if (f.type === 'emoji') {
+    const val = f.value || f.options[0];
+    input = `<input type="hidden" name="${f.name}" value="${esc(val)}"><div class="emoji-row">${f.options.map(e => `<button type="button" class="emoji-chip ${e === val ? 'on' : ''}" data-emoji="${e}">${e}</button>`).join('')}</div>`;
+  } else if (f.type === 'select') {
+    input = `<select id="${id}" name="${f.name}">${f.options.map(o => `<option value="${o.value}" ${String(o.value) === String(f.value) ? 'selected' : ''}>${esc(o.label)}</option>`).join('')}</select>`;
+  } else if (f.type === 'textarea') {
+    input = `<textarea id="${id}" name="${f.name}" placeholder="${esc(f.placeholder || '')}" ${req}>${esc(f.value || '')}</textarea>`;
+  } else {
+    input = `<input id="${id}" name="${f.name}" type="${f.type || 'text'}" value="${esc(f.value ?? '')}" placeholder="${esc(f.placeholder || '')}" ${f.min != null ? `min="${f.min}"` : ''} ${f.list ? `list="${id}_list"` : ''} ${req} maxlength="${f.type === 'number' ? '' : 80}">
+      ${f.list ? `<datalist id="${id}_list">${f.list.map(o => `<option value="${esc(o)}">`).join('')}</datalist>` : ''}`;
+  }
+  return `<div class="field"><label for="${id}">${esc(f.label)}</label>${input}${f.hint ? `<span class="hint">${esc(f.hint)}</span>` : ''}</div>`;
+}
+function openForm({ title, fields, submit = 'Save', onSubmit }) {
+  const dlg = $('#modal');
+  dlg.innerHTML = `<form class="modal-form"><h3>${esc(title)}</h3>${fields.map(fieldHtml).join('')}
+    <div class="modal-actions"><button type="button" class="btn ghost" data-close>Cancel</button><button type="submit" class="btn primary">${esc(submit)}</button></div></form>`;
+  const form = dlg.querySelector('form');
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+    Object.keys(data).forEach(k => data[k] = typeof data[k] === 'string' ? data[k].trim() : data[k]);
+    dlg.close();
+    onSubmit(data);
+  });
+  form.addEventListener('click', e => {
+    const chip = e.target.closest('.emoji-chip');
+    if (chip) {
+      chip.parentElement.querySelectorAll('.emoji-chip').forEach(c => c.classList.toggle('on', c === chip));
+      chip.parentElement.previousElementSibling.value = chip.dataset.emoji;
+    }
+    if (e.target.closest('[data-close]')) dlg.close();
+  });
+  dlg.showModal();
+  form.querySelector('input:not([type=hidden]),select,textarea')?.focus();
+}
+function askConfirm({ title, body, ok = 'Confirm', danger = false }, onOk) {
+  const dlg = $('#modal');
+  dlg.innerHTML = `<form class="modal-form"><h3>${esc(title)}</h3>${body ? `<p class="muted">${esc(body)}</p>` : ''}
+    <div class="modal-actions"><button type="button" class="btn ghost" data-close>Cancel</button><button type="submit" class="btn ${danger ? 'danger' : 'primary'}">${esc(ok)}</button></div></form>`;
+  dlg.querySelector('form').addEventListener('submit', e => { e.preventDefault(); dlg.close(); onOk(); });
+  dlg.querySelector('[data-close]').onclick = () => dlg.close();
+  dlg.showModal();
+}
+const xpOptions = [5, 10, 15, 20, 25].map(v => ({ value: v, label: `${v} XP` }));
+
+/* ---------- actions ---------- */
+const actions = {
+  nav: d => { view = d.view; render(); window.scrollTo({ top: 0 }); },
+  theme: () => {
+    const root = document.documentElement;
+    const isDark = root.dataset.theme === 'dark' || (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.dataset.theme = isDark ? 'light' : 'dark';
+    try { localStorage.setItem(THEME_KEY, root.dataset.theme); } catch (e) {}
+    renderPills();
+  },
+  rename: () => openForm({ title: 'What should we call you?', fields: [{ name: 'name', label: 'Your name', value: S.user.name, required: true }],
+    onSubmit: f => { S.user.name = f.name || 'Student'; save(); render(); } }),
+  toggleHabit: d => toggleHabit(d.id, d.date),
+  addHabit: () => openForm({ title: 'New study habit', submit: 'Add habit', fields: [
+      { name: 'name', label: 'Habit', placeholder: 'e.g. Solve 5 practice problems', required: true },
+      { name: 'icon', label: 'Icon', type: 'emoji', options: EMOJIS },
+      { name: 'subject', label: 'Subject', placeholder: 'e.g. Mechanics', list: subjectsList() },
+      { name: 'xp', label: 'Reward per check-in', type: 'select', options: xpOptions, value: 10, hint: 'Harder habits deserve more XP.' },
+    ], onSubmit: f => { const id = uid(); S.habits.push({ id, name: f.name, icon: f.icon, subject: f.subject || 'General', xp: +f.xp }); S.completions[id] = []; save(); render(); toast('Habit added'); } }),
+  editHabit: d => {
+    const h = S.habits.find(x => x.id === d.id);
+    openForm({ title: 'Edit habit', fields: [
+      { name: 'name', label: 'Habit', value: h.name, required: true },
+      { name: 'icon', label: 'Icon', type: 'emoji', options: EMOJIS.includes(h.icon) ? EMOJIS : [h.icon, ...EMOJIS], value: h.icon },
+      { name: 'subject', label: 'Subject', value: h.subject, list: subjectsList() },
+      { name: 'xp', label: 'Reward per check-in', type: 'select', options: xpOptions, value: h.xp },
+    ], onSubmit: f => { Object.assign(h, { name: f.name, icon: f.icon, subject: f.subject || 'General', xp: +f.xp }); save(); render(); } });
+  },
+  delHabit: d => {
+    const h = S.habits.find(x => x.id === d.id);
+    askConfirm({ title: `Delete “${h.name}”?`, body: 'XP you already earned from this habit is kept.', ok: 'Delete habit', danger: true },
+      () => { S.habits = S.habits.filter(x => x.id !== d.id); save(); render(); toast('Habit deleted'); });
+  },
+  addTask: () => openForm({ title: 'New task', submit: 'Add task', fields: [
+      { name: 'title', label: 'Task', placeholder: 'e.g. Mechanics problem set 5', required: true },
+      { name: 'subject', label: 'Subject', list: subjectsList() },
+      { name: 'due', label: 'Due date', type: 'date', value: addDays(today(), 3) },
+      { name: 'xp', label: 'Reward', type: 'select', options: [15, 25, 40, 60].map(v => ({ value: v, label: `${v} XP` })), value: 25 },
+    ], onSubmit: f => { S.tasks.push({ id: uid(), title: f.title, subject: f.subject, due: f.due, done: false, xp: +f.xp }); taskFilter = 'open'; save(); render(); toast('Task added'); } }),
+  toggleTask: d => mutate(() => {
+    const k = S.tasks.find(x => x.id === d.id);
+    k.done = !k.done;
+    if (k.done) S.ledger.push({ key: `k:${k.id}`, date: today(), xp: k.xp, type: 'task', label: k.title });
+    else removeLedger(`k:${k.id}`);
+  }),
+  delTask: d => { S.tasks = S.tasks.filter(x => x.id !== d.id); save(); render(); },
+  taskFilter: d => { taskFilter = d.f; render(); },
+  addGoal: () => openForm({ title: 'New learning goal', submit: 'Add goal', fields: [
+      { name: 'title', label: 'Goal', placeholder: 'e.g. Finish 15 truss problems', required: true },
+      { name: 'target', label: 'Target (number of steps)', type: 'number', value: 10, min: 1, required: true },
+      { name: 'xp', label: 'Bonus when completed', type: 'select', options: [30, 50, 80, 120].map(v => ({ value: v, label: `${v} XP` })), value: 50 },
+    ], onSubmit: f => { S.goals.push({ id: uid(), title: f.title, target: Math.max(1, Math.round(+f.target) || 1), current: 0, xp: +f.xp }); save(); render(); toast('Goal added'); } }),
+  goalStep: d => mutate(() => {
+    const g = S.goals.find(x => x.id === d.id);
+    const was = g.current >= g.target;
+    g.current = Math.max(0, Math.min(g.target, g.current + Number(d.d)));
+    const now = g.current >= g.target;
+    if (!was && now) S.ledger.push({ key: `g:${g.id}`, date: today(), xp: g.xp, type: 'goal', label: `Goal complete: ${g.title}` });
+    if (was && !now) removeLedger(`g:${g.id}`);
+  }),
+  delGoal: d => { S.goals = S.goals.filter(x => x.id !== d.id); save(); render(); },
+  addTopic: () => openForm({ title: 'New topic', submit: 'Add topic', fields: [
+      { name: 'name', label: 'Topic', placeholder: 'e.g. Bending moment diagrams', required: true },
+      { name: 'subject', label: 'Subject', value: topicFilter !== 'All' ? topicFilter : '', list: subjectsList(), required: true },
+      { name: 'status', label: 'How well do you understand it?', type: 'select', value: 0, options: STATUS.slice(0, 2).map((s, i) => ({ value: i, label: s.label })) },
+      { name: 'note', label: 'Simple explanation / real-life example (optional)', type: 'textarea', placeholder: 'Where do you see this in real life?' },
+    ], onSubmit: f => { S.topics.push({ id: uid(), name: f.name, subject: f.subject, status: +f.status, note: f.note }); save(); render(); toast('Topic added'); } }),
+  noteTopic: d => {
+    const t = S.topics.find(x => x.id === d.id);
+    openForm({ title: `Real-life example: ${t.name}`, fields: [{ name: 'note', label: 'Explain it simply or link it to something real', type: 'textarea', value: t.note, required: true }],
+      onSubmit: f => { t.note = f.note; save(); render(); } });
+  },
+  moveTopic: d => mutate(() => {
+    const t = S.topics.find(x => x.id === d.id);
+    const before = t.status;
+    t.status = Math.max(0, Math.min(2, t.status + Number(d.d)));
+    if (t.status === 2 && before !== 2) S.ledger.push({ key: `tp:${t.id}`, date: today(), xp: TOPIC_XP, type: 'topic', label: `Mastered: ${t.name}` });
+    if (before === 2 && t.status !== 2) removeLedger(`tp:${t.id}`);
+  }),
+  delTopic: d => { S.topics = S.topics.filter(x => x.id !== d.id); save(); render(); },
+  topicFilter: d => { topicFilter = d.s; render(); },
+  addReward: () => openForm({ title: 'New reward', submit: 'Add reward', fields: [
+      { name: 'name', label: 'Reward', placeholder: 'e.g. Order my favourite food', required: true },
+      { name: 'icon', label: 'Icon', type: 'emoji', options: REWARD_EMOJIS },
+      { name: 'cost', label: 'Cost in points', type: 'number', value: 150, min: 10, required: true },
+    ], onSubmit: f => { S.rewards.push({ id: uid(), name: f.name, icon: f.icon, cost: Math.max(10, Math.round(+f.cost) || 10) }); save(); render(); toast('Reward added'); } }),
+  redeem: d => {
+    const r = S.rewards.find(x => x.id === d.id);
+    if (points() < r.cost) return;
+    askConfirm({ title: `Redeem ${r.icon} ${r.name}?`, body: `This spends ${fmtNum(r.cost)} of your ${fmtNum(points())} points.`, ok: 'Redeem' }, () => {
+      mutate(() => S.redeemed.push({ id: uid(), name: r.name, icon: r.icon, cost: r.cost, date: today() }));
+      toast(`${r.icon} Enjoy your reward — you earned it!`);
+    });
+  },
+  delReward: d => { S.rewards = S.rewards.filter(x => x.id !== d.id); save(); render(); },
+  renameChar: () => openForm({ title: 'Name your character', fields: [{ name: 'name', label: 'Character name', value: S.character.name, required: true }],
+    onSubmit: f => { S.character.name = f.name || 'Buddy'; save(); render(); } }),
+  bg: d => { S.character.bg = d.id; save(); render(); },
+  skinEquip: d => { if (S.character.owned.includes(d.id)) { S.character.skin = d.id; save(); render(); } },
+  skinBuy: d => {
+    const k = skinOf(d.id), C = S.character;
+    if (C.owned.includes(k.id) || points() < k.cost || levelInfo(xpTotal()).level < k.lvl) return;
+    askConfirm({ title: `Buy ${k.name}?`, body: `This spends ${fmtNum(k.cost)} of your ${fmtNum(points())} points.`, ok: 'Buy skin' }, () => {
+      mutate(() => { C.owned.push(k.id); C.purchases.push({ id: k.id, name: k.name, cost: k.cost, date: today() }); C.skin = k.id; });
+      toast(`🎨 ${k.name} unlocked and equipped!`); confetti();
+    });
+  },
+  timerStart: d => { const m = +d.m; Object.assign(T, { status: 'running', minutes: m, total: m * 60000, remaining: m * 60000, endAt: Date.now() + m * 60000 }); updateTimer(true); },
+  timerPause: () => { T.remaining = Math.max(0, T.endAt - Date.now()); T.status = 'paused'; updateTimer(true); },
+  timerResume: () => { T.endAt = Date.now() + T.remaining; T.status = 'running'; updateTimer(true); },
+  timerCancel: () => { Object.assign(T, { status: 'idle', total: 0, remaining: 25 * 60000 }); updateTimer(true); },
+  resetDemo: () => askConfirm({ title: 'Reset demo data?', body: 'Your current habits, tasks and progress will be replaced with the demo data.', ok: 'Reset demo' },
+    () => { S = seedState(); save(); view = 'dashboard'; render(); toast('Demo data restored'); }),
+  clearAll: () => askConfirm({ title: 'Start a blank tracker?', body: 'All current habits, tasks, topics and progress will be removed.', ok: 'Start blank', danger: true }, () => {
+    S = emptyState(); S.rewards = seedState().rewards.map(r => ({ ...r, id: uid() }));
+    save(); view = 'dashboard'; render(); toast('Blank tracker ready — add your first habit!');
+  }),
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el || el.disabled) return;
+  const fn = actions[el.dataset.action];
+  if (fn) fn(el.dataset, el, e);
+});
+
+/* ---------- toast & confetti ---------- */
+function toast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  $('#toasts').appendChild(el);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 350); }, 2600);
+}
+function confetti() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const c = $('#confetti'), ctx = c.getContext('2d');
+  c.width = innerWidth; c.height = innerHeight;
+  const colors = ['#f2b705', '#1f9d63', '#2f6fde', '#d9503d', '#7b5cd6'];
+  const parts = [...Array(140)].map(() => ({
+    x: c.width / 2 + (Math.random() - .5) * 200, y: c.height * .35, vx: (Math.random() - .5) * 14, vy: -Math.random() * 13 - 4,
+    s: Math.random() * 6 + 4, r: Math.random() * 6, vr: (Math.random() - .5) * .3, col: colors[Math.floor(Math.random() * colors.length)],
+  }));
+  const t0 = performance.now();
+  (function frame(t) {
+    ctx.clearRect(0, 0, c.width, c.height);
+    parts.forEach(p => { p.vy += .35; p.x += p.vx; p.y += p.vy; p.vx *= .99; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.col; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore(); });
+    if (t - t0 < 2400) requestAnimationFrame(frame); else ctx.clearRect(0, 0, c.width, c.height);
+  })(t0);
+}
+
+/* ---------- init ---------- */
+try { const th = localStorage.getItem(THEME_KEY); if (th) document.documentElement.dataset.theme = th; } catch (e) {}
+let wasNarrow = innerWidth <= 860;
+addEventListener('resize', () => { const n = innerWidth <= 860; if (n !== wasNarrow) { wasNarrow = n; renderNav(); } });
+S = load();
+save();
+render();
+</script>
+</body>
+</html>
